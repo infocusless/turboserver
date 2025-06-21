@@ -65,7 +65,7 @@ public class AuthenticationService {
     public JwtAuthenticationResponse signUp(SignUpRequest request, UserDetails requester) {
         Role requestedRole = request.getRole();
 
-        if (requestedRole == null) {
+        /*if (requestedRole == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role is required");
         }
 
@@ -74,7 +74,7 @@ public class AuthenticationService {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                         "Only admins can create users with role " + requestedRole);
             }
-        }
+        }*/
 
         User user = User.builder()
                 .username(request.getUsername())
