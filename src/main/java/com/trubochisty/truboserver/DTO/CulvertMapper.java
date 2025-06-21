@@ -1,6 +1,7 @@
 package com.trubochisty.truboserver.DTO;
 
 import com.trubochisty.truboserver.model.Culvert;
+import com.trubochisty.truboserver.model.User;
 import com.trubochisty.truboserver.repository.IUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -99,4 +100,31 @@ public class CulvertMapper {
                 .users(dto.getUserIds!= null ? users : new ArrayList<>())
                 .build();
     }*/
+
+    public static CulvertUpdateDTO mapToCulvertUpdateDTO(Culvert culvert) {
+        return CulvertUpdateDTO.builder()
+                .id(culvert.getId())
+                .address(culvert.getAddress())
+                .coordinates(culvert.getCoordinates())
+                .road(culvert.getRoad())
+                .serialNumber(culvert.getSerialNumber())
+                .pipeType(culvert.getPipeType())
+                .material(culvert.getMaterial())
+                .diameter(culvert.getDiameter())
+                .length(culvert.getLength())
+                .headType(culvert.getHeadType())
+                .foundationType(culvert.getFoundationType())
+                .workType(culvert.getWorkType())
+                .constructionDate(culvert.getConstructionDate())
+                .lastRepairDate(culvert.getLastRepairDate())
+                .lastInspectionDate(culvert.getLastInspectionDate())
+                .strengthRating(culvert.getStrengthRating())
+                .safetyRating(culvert.getSafetyRating())
+                .maintainabilityRating(culvert.getMaintainabilityRating())
+                .generalConditionRating(culvert.getGeneralConditionRating())
+                .defects(culvert.getDefects())
+                .photos(culvert.getPhotos())
+                .userIDs(culvert.getUsers().stream().map(User::getId).collect(Collectors.toList()))
+                .build();
+    }
 }

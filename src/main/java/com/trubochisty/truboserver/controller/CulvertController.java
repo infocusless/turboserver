@@ -13,9 +13,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST для управления {@link Culvert}.
@@ -144,5 +149,115 @@ public class CulvertController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @PutMapping("/photos/{id}")
+    public ResponseEntity<List<String>> uploadPhotos(
+            @PathVariable String id,
+            @RequestParam("photos") List<MultipartFile> files
+    ) {
+        Culvert culvert = culvertService.getCulvert(id);
+
+        if (files == null || files.isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
+
+        Path uploadDir = Paths.get(System.getProperty("user.dir")).resolve("uploads");
+
+        List<String> photoUrls = new ArrayList<>();
+
+        try {
+            Files.createDirectories(uploadDir);
+
+            for (MultipartFile file : files) {
+                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                Path filepath = uploadDir.resolve(filename);
+                file.transferTo(filepath.toFile());
+
+                String photoUrl = "/photos/" + filename;
+                photoUrls.add(photoUrl);
+                culvert.getPhotos().add(photoUrl);
+            }
+
+            culvertService.updateCulvert(culvert.getId(), CulvertMapper.mapToCulvertUpdateDTO(culvert));
+            return ResponseEntity.ok(photoUrls);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/photos/replace/{id}")
+    public ResponseEntity<List<String>> replacePhotos(
+            @PathVariable String id,
+            @RequestParam("files") List<MultipartFile> files
+    ) {
+        Culvert culvert = culvertService.getCulvert(id);
+
+        if (files == null || files.isEmpty()) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
+
+        Path uploadDir = Paths.get(System.getProperty("user.dir")).resolve("uploads");
+        List<String> newPhotoUrls = new ArrayList<>();
+
+        try {
+            Files.createDirectories(uploadDir);
+
+            // Удаление старых файлов (опционально)
+            for (String oldUrl : culvert.getPhotos()) {
+                Path oldFile = uploadDir.resolve(Paths.get(oldUrl).getFileName().toString());
+                Files.deleteIfExists(oldFile);
+            }
+
+            culvert.getPhotos().clear();
+
+            for (MultipartFile file : files) {
+                String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
+                Path filepath = uploadDir.resolve(filename);
+                file.transferTo(filepath.toFile());
+
+                String photoUrl = "/photos/" + filename;
+                newPhotoUrls.add(photoUrl);
+                culvert.getPhotos().add(photoUrl);
+            }
+
+            culvertService.updateCulvert(culvert.getId(), CulvertMapper.mapToCulvertUpdateDTO(culvert));
+            return ResponseEntity.ok(newPhotoUrls);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/photos/{id}")
+    public ResponseEntity<String> deletePhoto(
+            @PathVariable String id,
+            @RequestParam("url") String url
+    ) {
+        System.out.println(url);
+        System.out.println("deletePhoto");
+        Culvert culvert = culvertService.getCulvert(id);
+
+        boolean removed = culvert.getPhotos().remove(url);
+        if (!removed) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Фото не найдено в списке");
+        }
+
+        // Удалить файл физически (опционально)
+        Path uploadDir = Paths.get(System.getProperty("user.dir")).resolve("uploads");
+        Path fileToDelete = uploadDir.resolve(Paths.get(url).getFileName().toString());
+        try {
+            Files.deleteIfExists(fileToDelete);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Не удалось удалить файл: " + e.getMessage());
+        }
+
+        culvertService.updateCulvert(culvert.getId(), CulvertMapper.mapToCulvertUpdateDTO(culvert));
+        return ResponseEntity.ok("Фото удалено");
+    }
+
+
+
 
 }
