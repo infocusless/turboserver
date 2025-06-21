@@ -143,7 +143,7 @@ public class CulvertController {
             }
 
             return ResponseEntity.ok()
-                    .contentType(MediaType.IMAGE_JPEG) // или динамически через Files.probeContentType
+                    .contentType(MediaType.IMAGE_JPEG)
                     .body(resource);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -203,7 +203,6 @@ public class CulvertController {
         try {
             Files.createDirectories(uploadDir);
 
-            // Удаление старых файлов (опционально)
             for (String oldUrl : culvert.getPhotos()) {
                 Path oldFile = uploadDir.resolve(Paths.get(oldUrl).getFileName().toString());
                 Files.deleteIfExists(oldFile);
@@ -243,7 +242,6 @@ public class CulvertController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Фото не найдено в списке");
         }
 
-        // Удалить файл физически (опционально)
         Path uploadDir = Paths.get(System.getProperty("user.dir")).resolve("uploads");
         Path fileToDelete = uploadDir.resolve(Paths.get(url).getFileName().toString());
         try {
