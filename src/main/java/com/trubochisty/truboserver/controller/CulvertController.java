@@ -121,8 +121,6 @@ public class CulvertController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCulvert(@PathVariable String id) {
         try{
-
-
             culvertService.deleteCulvert(id);
             return ResponseEntity.noContent().build();
         }
@@ -141,7 +139,6 @@ public class CulvertController {
             if (!resource.exists()) {
                 return ResponseEntity.notFound().build();
             }
-
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_JPEG)
                     .body(resource);

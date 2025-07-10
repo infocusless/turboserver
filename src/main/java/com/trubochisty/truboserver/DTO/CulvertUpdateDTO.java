@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CulvertUpdateDTO {
-    private String id;
     private String address;
     private String coordinates;
     private String road;

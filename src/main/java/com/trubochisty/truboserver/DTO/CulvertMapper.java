@@ -103,7 +103,6 @@ public class CulvertMapper {
 
     public static CulvertUpdateDTO mapToCulvertUpdateDTO(Culvert culvert) {
         return CulvertUpdateDTO.builder()
-                .id(culvert.getId())
                 .address(culvert.getAddress())
                 .coordinates(culvert.getCoordinates())
                 .road(culvert.getRoad())
